@@ -174,6 +174,7 @@ void sendQueryStatus(bool updateweb)
   }
   if (!ithoStatus.empty())
   {
+    bool sensorErrorStarted = false;
     for (auto &ithoStat : ithoStatus)
     {
       ithoStat.name = getStatusLabel(labelPos, ithoDeviceptr);
@@ -186,8 +187,8 @@ void sendQueryStatus(bool updateweb)
       if (ithoStatusUpdateField(ithoStat, tempVal, fanSensorErrors.begin()->second) &&
           (ithoStatusIsHumidity(ithoStat.name) || ithoStatusIsTemperature(ithoStat.name)))
       {
-        W_LOG("I2C: status %s out of range, raw value 0x%X (reply %u bytes, length byte %u)", ithoStat.name,
-              static_cast<unsigned>(tempVal), static_cast<unsigned>(result), static_cast<unsigned>(i2cbuf[5]));
+        W_LOG("I2C: status %s out of range, raw value 0x%X", ithoStat.name, static_cast<unsigned>(tempVal));
+        sensorErrorStarted = true;
       }
       statusPos += ithoStat.length;
 
@@ -206,6 +207,10 @@ void sendQueryStatus(bool updateweb)
       }
 
       labelPos++;
+    }
+    if (sensorErrorStarted)
+    {
+      W_LOG("I2C: status reply %s", i2cBufToString(i2cbuf, result).c_str());
     }
   }
   xSemaphoreGive(ithoStatusMutex);
