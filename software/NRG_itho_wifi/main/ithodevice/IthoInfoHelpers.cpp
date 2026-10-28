@@ -1,5 +1,6 @@
 #include "IthoDevice.h"
 #include "devices/error_info_labels.h"
+#include "i2c_sniffer.h"
 
 int getStatusLabelLength(const uint8_t deviceGroup, const uint8_t deviceID, const uint8_t version)
 {
@@ -148,10 +149,11 @@ size_t sendI2cQuery(uint8_t *i2c_command, size_t i2c_command_length, uint8_t *re
     return 0;
   if (receive_buffer == nullptr)
     return 0;
-  if (!i2cSendBytes(i2c_command, i2c_command_length, origin))
-    return 0;
-
-  size_t len = i2cSlaveReceive(receive_buffer);
+  i2cSnifferPauseForQuery();
+  size_t len = 0;
+  if (i2cSendBytes(i2c_command, i2c_command_length, origin))
+    len = i2cSlaveReceive(receive_buffer);
+  i2cSnifferResumeAfterQuery();
   if (!len)
     return 0;
 
