@@ -47,5 +47,3 @@ void i2cSnifferEnable();
 void i2cSnifferDisable();
 void i2cSnifferUnload();
 void i2cSnifferPullup(bool enable);
-void i2cSnifferPauseForQuery();
-void i2cSnifferResumeAfterQuery();

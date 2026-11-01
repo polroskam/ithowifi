@@ -20,7 +20,6 @@ static QueueHandle_t gpio_evt_queue;
 // Removed: sniffer pin globals, i2c_safe_guard
 
 #include "managers/I2CManager.h"
-#include "managers/HardwareManager.h"
 
 Ticker i2c_sniffer_timer;
 
@@ -233,25 +232,6 @@ void i2cSnifferUnload()
     sg->i2c_safe_guard_enabled = false;
     sg->sniffer_enabled = false;
     i2cSnifferDisable();
-}
-
-// The sniffer's interrupt busy-waits through every transaction it sees; it stays off while the
-// add-on sends a query and receives the reply as I2C slave (ithowifi#295).
-static bool resume_after_query = false;
-
-void i2cSnifferPauseForQuery()
-{
-    resume_after_query = hardwareManager.i2c_sniffer_capable &&
-                         GPIO.pin[i2cManager.sniffer_sda_pin].int_type != GPIO_INTR_DISABLE;
-    if (resume_after_query)
-        i2cSnifferDisable();
-}
-
-void i2cSnifferResumeAfterQuery()
-{
-    if (resume_after_query)
-        enable_sda_intr(true);
-    resume_after_query = false;
 }
 
 void i2cSnifferPullup(bool enable)
