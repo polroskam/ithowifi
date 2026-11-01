@@ -37,8 +37,6 @@ static inline IRAM_ATTR void enable_sda_intr(bool en)
     GPIO.pin[i2cManager.sniffer_sda_pin].int_type = en ? GPIO_INTR_ANYEDGE : GPIO_INTR_DISABLE;
 }
 
-// The interrupt runs while the sniffer is enabled and not paused. i2cSlaveReceive pauses it: the
-// interrupt's busy-wait through a transaction makes the slave receive lose a byte of the reply (#295).
 static volatile bool sda_intr_enabled = false;
 static volatile bool sda_intr_paused = false;
 
@@ -111,7 +109,9 @@ static void sniffer_task(void *arg)
                             GPIO_INTR_DISABLE};
     gpio_config(&config);
     gpio_isr_handler_add(i2cManager.sniffer_sda_pin, gpio_sda_handler, (void *)i2cManager.sniffer_sda_pin);
-    enable_sda_intr(!!arg);
+    if (arg)
+        sda_intr_enabled = true;
+    update_sda_intr();
 
     std::string buffer;
 

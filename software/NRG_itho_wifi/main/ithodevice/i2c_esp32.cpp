@@ -213,6 +213,7 @@ bool i2cSendCmd(uint8_t addr, const uint8_t *cmd, size_t len)
 
 size_t i2cSlaveReceive(uint8_t *i2c_receive_buf)
 {
+  // The sniffer interrupt's busy-wait through the reply can cost the slave receive a byte (#295).
   i2cSnifferPause();
 
   i2c_config_t conf_slave = {
